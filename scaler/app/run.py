@@ -11,7 +11,6 @@ dockerapi = DockerAPIWrapper()
 def autoscaler_loop(timequeue, on, config):
   with open(config.value, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
-    print(config.value)
 
   scale_up_threshold = cfg['scale_up_threshold']
   scale_down_threshold = cfg['scale_down_threshold']
@@ -21,8 +20,6 @@ def autoscaler_loop(timequeue, on, config):
   poll_interval = cfg['poll_interval']
   servicename = cfg['servicename']
   target_url = cfg['target_url']
-  print(scale_up_threshold)
-  print(scale_down_threshold)
 
   while True:
     if on.value == True:
