@@ -38,8 +38,6 @@ def plotstats():
     fig = plt.figure()
     ax = fig.add_subplot(111)
     plt.ion()
-    fig.show()
-    fig.canvas.draw()
 
     y = avg_response
     print(timeArray)
@@ -53,4 +51,4 @@ def plotstats():
 
 @app.route('/printgraph')
 def images():
-  return render_template("templates/plot.html", title=cropzonekey)
+  return render_template("templates/plot.html")

@@ -2,7 +2,7 @@ import yaml
 import argparse
 import time
 import ctypes
-from multiprocessing import Process, Value, Queue
+from multiprocessing import Process, Value, Queue, Manager
 from api import app, timequeue, avg_response, workload, replications, timeArray
 from mydocker.dockerapi import DockerAPIWrapper
 
