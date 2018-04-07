@@ -4,14 +4,6 @@ from multiprocessing import Process, Value, Queue
 from api import app, timequeue
 from mydocker.dockerapi import DockerAPIWrapper
 
-scale_up_threshold = 0
-scale_down_threshold = 0
-scale_step = 0
-max_replica = 0
-min_replica = 0
-poll_interval = 0
-servicename = ''
-
 dockerapi = DockerAPIWrapper()
 
 def autoscaler_loop(timequeue, on):
@@ -40,12 +32,12 @@ def autoscaler_loop(timequeue, on):
       if avg != 0:
         print('The average elapsed time: {}'.format(avg))
         if avg > scale_up_threshold:
-          repcount = dockerapi.getReplicaCount(servicename) + scalestep
+          repcount = dockerapi.getReplicaCount(servicename) + scale_step
           if repcount <= max_replica:
             dockerapi.scaleService(servicename, repcount)
             print("Scaling up")
         if avg < scale_down_threshold:
-          repcount = dockerapi.getReplicaCount(servicename) - scalestep
+          repcount = dockerapi.getReplicaCount(servicename) - scale_step
           if repcount >= min_replica:
             dockerapi.scaleService(servicename, repcount)
             print("Scaling down")
