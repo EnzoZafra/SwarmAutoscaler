@@ -6,7 +6,6 @@ import requests
 import time
 import threading
 import sys
-import signal
 from requests.exceptions import ConnectionError
 
 if len(sys.argv) < 4:

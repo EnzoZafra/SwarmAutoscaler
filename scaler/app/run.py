@@ -52,5 +52,5 @@ if __name__ == '__main__':
               args = (timequeue, val)
               )
   p.start()
-  app.run(host="0.0.0.0", port=1337, debug=True)
+  app.run(host="0.0.0.0", port=1337)
   p.join()
