@@ -6,6 +6,7 @@ import requests
 import time
 import threading
 import sys
+from requests.exceptions import ConnectionError
 
 if len(sys.argv) < 4:
     print('To few arguments; you need to specify 3 arguments.')
@@ -18,7 +19,6 @@ else:
     swarm_master_ip = sys.argv[1]
     no_users = int(sys.argv[2])
     think_time = float(sys.argv[3])
-
 
 class MyThread(threading.Thread):
     def __init__(self, name, counter):
@@ -35,14 +35,19 @@ class MyThread(threading.Thread):
 def workload(user):
     while True:
         t0 = time.time()
-        requests.get('http://' + swarm_master_ip + ':8000/')
+        try:
+          r = requests.get('http://' + swarm_master_ip + ':8000/')
+        except ConnectionError as e:
+          print 'Service is autoscaling. Please try again'
         t1 = time.time()
         time.sleep(think_time)
         print("Response Time for " + user + " = " + str(t1 - t0))
         payload = {'time': str(t1-t0)}
-        # response = requests.post('http://' + swarm_master_ip  + ':1337/metric', data=payload)
-        response = requests.post('http://localhost:1337/metric', data=payload)
-
+        try:
+          response = requests.post('http://localhost:1337/metric', data=payload)
+          # response = requests.post('http://' + swarm_master_ip  + ':1337/metric', data=payload)
+        except ConnectionError as e:
+          print 'Metric for autoscaler is down'
 
 if __name__ == "__main__":
     threads = []
