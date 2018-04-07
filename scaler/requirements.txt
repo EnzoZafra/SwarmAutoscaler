@@ -1,3 +1,5 @@
 docker
 pyyaml
 flask
+numpy
+matplotlib

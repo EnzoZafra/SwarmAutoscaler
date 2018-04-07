@@ -3,12 +3,14 @@ import argparse
 import time
 import ctypes
 from multiprocessing import Process, Value, Queue
-from api import app, timequeue
+from api import app, timequeue, avg_response, workload, replications, timeArray
 from mydocker.dockerapi import DockerAPIWrapper
 
 dockerapi = DockerAPIWrapper()
+startTime = 0
 
-def autoscaler_loop(timequeue, on, config):
+def autoscaler_loop(timequeue, on, config, avg_response
+                    , workload, replications, timeArray):
   with open(config.value, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
@@ -32,20 +34,29 @@ def autoscaler_loop(timequeue, on, config):
 
       avg = sum/len if len else 0
       if avg != 0:
-        print('The average elapsed time: {}'.format(avg))
+        curr_repcount = dockerapi.getReplicaCount(servicename)
+        req_per_sec = len / poll_interval
+
+        avg_response.append(avg)
+        replications.append(curr_repcount)
+        workload.append(req_per_sec)
+        elapsedTime = time.time() - startTime
+        timeArray.append(elapsedTime)
+
         if avg > scale_up_threshold:
-          repcount = dockerapi.getReplicaCount(servicename) + scale_step
+          repcount = curr_repcount + scale_step
           if repcount <= max_replica:
             dockerapi.scaleService(servicename, repcount)
             print("Scaling up")
         if avg < scale_down_threshold:
-          repcount = dockerapi.getReplicaCount(servicename) - scale_step
+          repcount = curr_repcount - scale_step
           if repcount >= min_replica:
             dockerapi.scaleService(servicename, repcount)
             print("Scaling down")
       time.sleep(poll_interval)
 
 if __name__ == '__main__':
+  startTime = time.time()
   parser = argparse.ArgumentParser(description="An autoscaler for your swarm cluster")
   parser.add_argument('configfile',
                       help='include a path to a configuration file')
@@ -59,7 +70,7 @@ if __name__ == '__main__':
   val = Value("b", True)
   p = Process(
               target = autoscaler_loop,
-              args = (timequeue, val, config)
+              args = (timequeue, val, config, avg_response, workload, replications, timeArray)
               )
   p.start()
   app.run(host="0.0.0.0", port=1337)
