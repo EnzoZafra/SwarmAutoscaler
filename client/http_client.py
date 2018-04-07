@@ -6,6 +6,7 @@ import requests
 import time
 import threading
 import sys
+import signal
 from requests.exceptions import ConnectionError
 
 if len(sys.argv) < 4:
@@ -38,24 +39,24 @@ def workload(user):
         try:
           r = requests.get('http://' + swarm_master_ip + ':8000/')
         except ConnectionError as e:
-          print 'Service is autoscaling. Please try again'
+          print ('Service is autoscaling. Please try again')
         t1 = time.time()
         time.sleep(think_time)
         print("Response Time for " + user + " = " + str(t1 - t0))
         payload = {'time': str(t1-t0)}
         try:
-          response = requests.post('http://localhost:1337/metric', data=payload)
-          # response = requests.post('http://' + swarm_master_ip  + ':1337/metric', data=payload)
+          response = requests.post('http://' + swarm_master_ip  + ':1337/metric', data=payload)
         except ConnectionError as e:
-          print 'Metric for autoscaler is down'
+          print ('Metric for autoscaler is down')
+
 
 if __name__ == "__main__":
-    threads = []
-    for i in range(no_users):
-        threads.append(MyThread("User", i))
+  threads = []
+  for i in range(no_users):
+      threads.append(MyThread("User", i))
 
-    for i in range(no_users):
-        threads[i].start()
+  for i in range(no_users):
+      threads[i].start()
 
-    for i in range(no_users):
-        threads[i].join()
+  for i in range(no_users):
+      threads[i].join()
