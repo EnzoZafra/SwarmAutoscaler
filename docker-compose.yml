@@ -31,14 +31,14 @@ services:
         constraints: [node.role == manager]
 
   autoscaler:
-    image: zafra/autoscaler:ece422
+    image: zafra/swarmautoscaler:ece422
+    # command: "--configfile swarmautoscaler.yml"
     ports:
       - "1337:1337"
+    volumes:
+      - ${PWD}/swarmautoscaler.yml:/opt/swarmautoscaler/swarmautoscaler.yml
+      - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       placement:
         constraints:
           - node.role == manager
-
-configs:
-  autoscaler.yml:
-    file: config.yml
