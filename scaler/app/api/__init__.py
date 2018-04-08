@@ -2,8 +2,6 @@ from flask import Flask, request, send_file,render_template
 import pygal
 import sys
 from StringIO import StringIO
-import numpy as np
-import matplotlib.pyplot as plt
 import time
 import random
 from multiprocessing import Queue, Manager
@@ -49,6 +47,7 @@ def plotstats():
       line_chart.render_to_png('chart.png')
       print("inside here")
   return send_file('chart.png', mimetype='image/png')
+
 """ plt.axis([0,200,0,200])
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -67,4 +66,4 @@ def plotstats():
 
 @app.route('/printgraph')
 def images():
-   return render_template("templates/plot.html")
+   return render_template("html/plot.html")
