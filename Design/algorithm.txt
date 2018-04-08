@@ -33,11 +33,18 @@ or maximum threshold. If so, scale up or down.
 Parameters for the autoscaler are set in swarmautoscaler.yml.
 The default configuration has the following values:
 
-poll_interval: 15
+poll_interval: 10
 scale_step: 1
-scale_up_threshold: 3 (TODO: UPDATE THIS)
-scale_down_threshold: 2 (TODO: UPDATE THIS)
+scale_up_threshold: 3
+scale_down_threshold: 2
 max_replica: 20
 min_replica: 1
 
-State reasons why
+Scale step is set arbitrarily. It was easier to monitor the scaler with a scale step of 1.
+After testing, the cybera VMs seem to vary highly in response time depending on the time of day.
+
+In somedays, a scale up and down threshold of 4 and 2 respectively makes a nice curve, and others
+require a higher scale up threshold. It was hard to have an exact configuration due to the high variance
+
+The number of replicas depend on the size of the VMs and number of workers. Since we have 'large' VMs,
+we allow a large number of replicas to test and have better response times.
