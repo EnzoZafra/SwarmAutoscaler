@@ -34,7 +34,7 @@ def addmetric():
 @app.route('/graphs', methods=['GET'])
 def plotstats():
   if request.method == 'GET':
-    times = [pygal.util.round_to_int(x) for x in timeArray]
+    times = [pygal.util.round_to_int(x, 1) for x in timeArray]
     x_title = 'Elapsed time (sec)'
 
     title = 'Average Response Time vs Elapsed Time'
@@ -44,7 +44,7 @@ def plotstats():
                              style=DarkSolarizedStyle,disable_xml_declaration=True,
                              show_legend=False)
     line_chart.x_labels = times
-    avg_response_arr = [pygal.util.round_to_scale(x, 3) for x in avg_response]
+    avg_response_arr = [x for x in avg_response]
     line_chart.add('response time', avg_response_arr)
 
     title2 = 'Requests per second vs Elapsed Time'
@@ -54,7 +54,7 @@ def plotstats():
                              style=DarkSolarizedStyle,disable_xml_declaration=True,
                              show_legend=False)
     line_chart2.x_labels = times
-    workload_arr = [pygal.util.round_to_scale(x, 3) for x in workload]
+    workload_arr = [x for x in workload]
     line_chart2.add('workload', workload_arr)
 
     title3 = 'Number of Replications vs Elapsed Time'
