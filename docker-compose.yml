@@ -15,7 +15,7 @@ services:
     ports:
       - "6379:6379"
     deploy:
-     resources:
+     resorces:
         limits:
           cpus: '0.25'
           memory: 256M
@@ -30,15 +30,14 @@ services:
       placement:
         constraints: [node.role == manager]
 
-  # autoscaler:
-  #   image: zafra/swarmautoscaler:ece422
-  #   # command: "--configfile swarmautoscaler.yml"
-  #   ports:
-  #     - "1337:1337"
-  #   volumes:
-  #     - ${PWD}/swarmautoscaler.yml:/opt/swarmautoscaler/swarmautoscaler.yml
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.role == manager
+  autoscaler:
+    image: zafra/swarmautoscaler:ece422
+    ports:
+      - "1337:1337"
+    volumes:
+      - ${PWD}/swarmautoscaler.yml:/opt/swarmautoscaler/swarmautoscaler.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
