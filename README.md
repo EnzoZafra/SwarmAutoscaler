@@ -1,24 +1,11 @@
-# Secure File System (SFS)
+# Swarm AutoScaler
 
-Secure file system is a file server that allows users to store their data on an untrusted machine.
-The machine encrypts user's data and is only provided to the internal users of the system. The system
-uses the following cryptography tools:
+Swarm AutoScaler is a service which gathers response time statistics for a cloud microservice application
+and automatically scales the said cloud microservice depending on the gathered statistics. The auto-scaler scales
+the application horizontally according to the workload. An acceptable range for response time is indicated by an
+upper and lower threshold which can be configured by a configuration file.
 
-1. AES Encryption for encrypting files on the server
-    * The files are encrypted by calculating a key using the server's passphrase on login
-    * Every time the client requests a file, filenames or directory names the server decrypts the data
-    before passing it on to the RSA encryptor for communication
-    * When the server receives data to save, the server encrypts it with its key before its stored
-2. RSA assymetric encryption when communicating between the client and server
-	* All data transfer between the server and the client is encrypted.
-	* Keys are generated when the Client registers and the public key is shared on login
-	* Data outgoing is always encrypted with the receiver's public key
-	* Data incoming is decrypted with the receiver's private key
-	
-3. SHA-2 for hashing passwords and creating certificates
-	* The client's password is hashed before it's sent in the socket for verification. The server then checks the hash if it matches the username and password that is stored on registry.
-	* When the user successfully logs in, the server computes the checksum of its files and directories. If the checksum does not match, it sends a warning to the user.
-	* Whenever an internal user modifies, creates or deletes a file, the checksum of the files are recalculated and stored to be verified later
+At the moment, the autoscaler relies on statistics being POSTed to it by a client.
 
 ## Authors
 
@@ -26,8 +13,6 @@ uses the following cryptography tools:
 * **Alexander Nguyen** - [ahnguyen03](https://github.com/ahnguyen03)
 
 ## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 
 ### Prerequisites
@@ -43,17 +28,20 @@ then update
 sudo pip install --upgrade pip 
 ```
 
-### Installing
+### Installing Locally
+When SwarmAutoScaler is ran locally, it is assumed that the Docker service you want
+to auto-scale is up and running.
+
 clone the project
 
 ```
-git clone https://github.com/EnzoZafra/SecureFileSystem.git
+git clone https://github.com/EnzoZafra/SwarmAutoScaler.git
 ```
 
-go to the projects directory
+go to the scaler's directory
 
 ```
-cd SecureFileSystem/
+cd SwarmAutoScaler/scaler
 ```
 
 install packages
@@ -62,100 +50,74 @@ install packages
 pip install -r requirements.txt
 ```
 
-### Deploying
-change directory into the src folder
-```
-ch src/
-```
-deploy the server on a machine
-```
-python server.py [portnumber]
-```
-* make sure that [portnumber] is accepting Ingress communication on the server
+run autoscaler
 
-run the client and connect to the server
 ```
-python client.py [serverhost] [portnumber]
-```
-* where [serverhost] is the hostname of the server and [portnumber] is the opened port in the server
-
-### Instructions
-1. When the server is launched, input a password. This password is used to generate an AES key
-that will be used to encrypt the files and data in the server.
-
-2. Deploy a client and connect to the server. The shell will ask you to register and log-in with a
-username and password
-```
-what would you like to do? [1]: signin [2]: register :
-Please input a username:
-Please input a password:
+python app/run.py  ../swarmautoscaler.yml
 ```
 
-3. When logged in, you will be able to use the following commands (in the client):
-list the files and directories
+run the client which emulates load and sends a POST request to the autoscaler for statistics
+
 ```
-ls [path]
+cd ../client
+python http_client [autoscaler's ip] [numthreads] [delay_per_request]
 ```
 
-change directory
+
+### Running in a Docker Swarm
+Add this service to your docker-compose file
 ```
-cd [path]
+service:
+   autoscaler:
+     image: zafra/swarmautoscaler:ece422
+     # command: "--configfile swarmautoscaler.yml"
+     ports:
+       - "1337:1337"
+     volumes:
+       - ${PWD}/swarmautoscaler.yml:/opt/swarmautoscaler/swarmautoscaler.yml
+       - /var/run/docker.sock:/var/run/docker.sock
+     deploy:
+       placement:
+         constraints:
+           - node.role == manager
 ```
 
-create directory
+### Example in a Docker Swarm
+get a copy of the configuration file
 ```
-mkdir [path]
-```
-
-remove file/directory
-```
-rm [path]
+wget https://raw.githubusercontent.com/EnzoZafra/SwarmAutoscaler/master/swarmautoscaler.yml
 ```
 
-print current directory
+get a copy of the docker-compose file
 ```
-pwd
-```
-
-move/rename files or directory
-```
-mv/move [source] [destination]
+wget https://raw.githubusercontent.com/EnzoZafra/SwarmAutoscaler/master/docker-compose.yml
 ```
 
-print file contents
+deploy the stack in your swarm
 ```
-cat [path]
-```
-
-open/edit files
-```
-vim/open/edit [filename]
+docker stack deploy --compose-file docker-compose.yml app_name
 ```
 
-change permissions for a file
+run the client which emulates load and sends a POST request to the autoscaler for statistics
+
 ```
-chmod [permission]
-```
-* permission is in the form of 'OWNER,GROUP,OTHER'
-for example (to set owner = RW, GROUP = R, OTHER = -):
-```
-chmod RW,R,N
+wget https://raw.githubusercontent.com/EnzoZafra/SwarmAutoscaler/master/client/http_client.py
+python http_client [autoscaler's ip] [numthreads] [delay_per_request]
 ```
 
-logout of the client
+### Example in a Docker Swarm
+Graphs plotting request per second, workload and number of replicas for the service can be found at the link below
 ```
-logout
+http://[autoscalerip]:1337/graphs
 ```
-
-4. In the server, the administrator can change the group that a user belongs to using the following:
-```
-chgroup [username] [groupname]
-```
-
+* Assumes that you have autoscaler running
 
 ## Built With
 
 * [Python](https://www.python.org/) - Language used
-* [PyCrypto](https://pypi.python.org/pypi/pycrypto) - Encryption library
-* [ChecksumDir](https://pypi.python.org/pypi/checksumdir) - Checksum Integrity Checker
+* [Flask](http://flask.pocoo.org/) - API Framework
+* [pyyaml](http://pyyaml.org/wiki/PyYAML) - YAML file parser
+* [DockerApi](https://docker-py.readthedocs.io) - Docker Python API
+* [PyGal](http://pygal.org/) - Graphing in Python
+
 
