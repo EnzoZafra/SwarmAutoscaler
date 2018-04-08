@@ -40,17 +40,19 @@ def plotstats():
     line_chart = pygal.Line(width=1200, height=200,explicit_size=True, title=title,style=DarkSolarizedStyle,disable_xml_declaration=True)
     line_chart.x_labels = times
     avg_response_arr = [x for x in avg_response]
-    line_chart.add('chart1', avg_response_arr)
-
-    line_chart2 = pygal.Line(width=1200, height=200,explicit_size=True, title=title,style=DarkSolarizedStyle,disable_xml_declaration=True)
+    line_chart.add('response time', avg_response_arr)
+    
+    title2 = 'workload vs elapsed time'
+    line_chart2 = pygal.Line(width=1200, height=200,explicit_size=True, title=title2,style=DarkSolarizedStyle,disable_xml_declaration=True)
     line_chart2.x_labels = times
     workload_arr = [x for x in workload]
-    line_chart2.add('chart2', workload_arr)
+    line_chart2.add('workload', workload_arr)
 
-    line_chart3 = pygal.Line(width=1200, height=200,explicit_size=True, title=title,style=DarkSolarizedStyle,disable_xml_declaration=True)
+    title3 = 'replication factor vs elapsed time'
+    line_chart3 = pygal.Line(width=1200, height=200,explicit_size=True, title=title3,style=DarkSolarizedStyle,disable_xml_declaration=True)
     line_chart3.x_labels = times
     replications_arr = [x for x in replications]
-    line_chart3.add('chart3', replications_arr)
+    line_chart3.add('replication', replications_arr)
 
     return render_template("plot.html", line_chart=line_chart,line_chart2=line_chart2,line_chart3 = line_chart3)
 
