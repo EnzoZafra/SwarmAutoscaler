@@ -27,9 +27,9 @@ class MyThread(threading.Thread):
     self.name = name
     self.counter = counter
 
-    def run(self):
-      print("Starting " + self.name + str(self.counter))
-      workload(self.name + str(self.counter))
+  def run(self):
+    print("Starting " + self.name + str(self.counter))
+    workload(self.name + str(self.counter))
 
 
 def workload(user):
@@ -37,13 +37,8 @@ def workload(user):
     t0 = time.time()
     try:
       r = requests.get('http://' + swarm_master_ip + ':8000/')
-    except ConnectionError as e:
-      print ('Service is autoscaling. Please try again')
       t1 = time.time()
       time.sleep(think_time)
-      # if less than 0.05, the service scaled during get request, so ignore
-      if (t1-t0) < 0.05:
-        continue
       print("Response Time for " + user + " = " + str(t1 - t0))
       payload = {'time': str(t1-t0)}
       try:
@@ -51,7 +46,8 @@ def workload(user):
         response = requests.post('http://' + swarm_master_ip  + ':1337/metric', data=payload)
       except ConnectionError as e:
         print ('Metric for autoscaler is down')
-
+    except ConnectionError as e:
+      print ('Service is autoscaling. Please try again')
 
 if __name__ == "__main__":
   threads = []

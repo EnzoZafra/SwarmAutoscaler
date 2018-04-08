@@ -21,7 +21,6 @@ def autoscaler_loop(timequeue, on, config, avg_response
   min_replica = cfg['min_replica']
   poll_interval = cfg['poll_interval']
   servicename = cfg['servicename']
-  target_url = cfg['target_url']
 
   while True:
     if on.value == True:
@@ -34,8 +33,7 @@ def autoscaler_loop(timequeue, on, config, avg_response
 
       avg = sum/len if len else 0
       if avg != 0:
-#        curr_repcount = dockerapi.getReplicaCount(servicename)
-	curr_repcount = 2
+        curr_repcount = dockerapi.getReplicaCount(servicename)
         req_per_sec = len / poll_interval
 
         avg_response.append(avg)
@@ -47,12 +45,12 @@ def autoscaler_loop(timequeue, on, config, avg_response
         if avg > scale_up_threshold:
           repcount = curr_repcount + scale_step
           if repcount <= max_replica:
-#            dockerapi.scaleService(servicename, repcount)
+            dockerapi.scaleService(servicename, repcount)
             print("Scaling up")
         if avg < scale_down_threshold:
           repcount = curr_repcount - scale_step
           if repcount >= min_replica:
-#            dockerapi.scaleService(servicename, repcount)
+            dockerapi.scaleService(servicename, repcount)
             print("Scaling down")
       time.sleep(poll_interval)
 
@@ -70,9 +68,9 @@ if __name__ == '__main__':
 
   val = Value("b", True)
   p = Process(
-              target = autoscaler_loop,
-              args = (timequeue, val, config, avg_response, workload, replications, timeArray)
-              )
+    target = autoscaler_loop,
+    args = (timequeue, val, config, avg_response, workload, replications, timeArray)
+  )
   p.start()
   app.run(host="0.0.0.0", port=1337)
   p.join()
