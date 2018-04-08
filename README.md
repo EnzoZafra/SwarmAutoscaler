@@ -14,8 +14,6 @@ At the moment, the autoscaler relies on statistics being POSTed to it by a clien
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
 
 ### Prerequisites
 To install, you will need Python 2.7, and Pip
