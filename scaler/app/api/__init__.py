@@ -39,7 +39,7 @@ def plotstats():
 
     title = 'Average Response Time vs Elapsed Time'
     y_title = 'Response Time (sec)'
-    line_chart = pygal.Line(width=1300, height=250,explicit_size=True,
+    line_chart = pygal.Line(width=1250, height=225,explicit_size=True,
                             title=title, x_title=x_title, y_title=y_title,
                              style=DarkSolarizedStyle,disable_xml_declaration=True,
                              show_legend=False)
@@ -49,7 +49,7 @@ def plotstats():
 
     title2 = 'Requests per second vs Elapsed Time'
     y_title2 = 'Requests per second'
-    line_chart2 = pygal.Line(width=1300, height=250,explicit_size=True,
+    line_chart2 = pygal.Line(width=1250, height=225,explicit_size=True,
                              title=title2, x_title=x_title, y_title=y_title2,
                              style=DarkSolarizedStyle,disable_xml_declaration=True,
                              show_legend=False)
@@ -59,7 +59,7 @@ def plotstats():
 
     title3 = 'Number of Replications vs Elapsed Time'
     y_title3 = 'Number of Replicas'
-    line_chart3 = pygal.Line(width=1300, height=250,explicit_size=True,
+    line_chart3 = pygal.Line(width=1250, height=225,explicit_size=True,
                              title=title3, x_title=x_title, y_title=y_title3,
                              style=DarkSolarizedStyle,disable_xml_declaration=True,
                              show_legend=False)
