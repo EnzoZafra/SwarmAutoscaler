@@ -3,6 +3,9 @@
     <title>{{ title }} - image</title>
   </head>
   <body>
-    <img src="{{ url_for('plotstats', cropzonekey = title) }}" alt="Image Placeholder" height="100">
+      {{ line_chart.render()|safe }}
+      {{ line_chart2.render()|safe }}
+      {{ line_chart3.render()|safe }}
+      
   </body>
 </html>

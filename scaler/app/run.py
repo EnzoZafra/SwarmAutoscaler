@@ -2,7 +2,7 @@ import yaml
 import argparse
 import time
 import ctypes
-from multiprocessing import Process, Value, Queue, Manager
+from multiprocessing import Process, Value, Queue
 from api import app, timequeue, avg_response, workload, replications, timeArray
 from mydocker.dockerapi import DockerAPIWrapper
 
@@ -34,7 +34,8 @@ def autoscaler_loop(timequeue, on, config, avg_response
 
       avg = sum/len if len else 0
       if avg != 0:
-        curr_repcount = dockerapi.getReplicaCount(servicename)
+#        curr_repcount = dockerapi.getReplicaCount(servicename)
+	curr_repcount = 2
         req_per_sec = len / poll_interval
 
         avg_response.append(avg)
@@ -46,12 +47,12 @@ def autoscaler_loop(timequeue, on, config, avg_response
         if avg > scale_up_threshold:
           repcount = curr_repcount + scale_step
           if repcount <= max_replica:
-            dockerapi.scaleService(servicename, repcount)
+#            dockerapi.scaleService(servicename, repcount)
             print("Scaling up")
         if avg < scale_down_threshold:
           repcount = curr_repcount - scale_step
           if repcount >= min_replica:
-            dockerapi.scaleService(servicename, repcount)
+#            dockerapi.scaleService(servicename, repcount)
             print("Scaling down")
       time.sleep(poll_interval)
 

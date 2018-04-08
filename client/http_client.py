@@ -47,6 +47,7 @@ def workload(user):
       print("Response Time for " + user + " = " + str(t1 - t0))
       payload = {'time': str(t1-t0)}
       try:
+        #response = requests.post('http://' + 'localhost'  + ':1337/metric', data=payload)
         response = requests.post('http://' + swarm_master_ip  + ':1337/metric', data=payload)
       except ConnectionError as e:
         print ('Metric for autoscaler is down')
