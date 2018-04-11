@@ -41,13 +41,13 @@ def workload(user):
       time.sleep(think_time)
       print("Response Time for " + user + " = " + str(t1 - t0))
       payload = {'time': str(t1-t0)}
-      #try:
-      #  #response = requests.post('http://' + 'localhost'  + ':1337/metric', data=payload)
-      #  response = requests.post('http://' + swarm_master_ip  + ':1337/metric', data=payload)
-      #except ConnectionError as e:
-      #  print ('Metric for autoscaler is down')
-    #except ConnectionError as e:
-      #print ('Service is autoscaling. Please try again')
+      try:
+        # post just to get graph values
+        response = requests.post('http://' + swarm_master_ip  + ':1337/metric', data=payload)
+      except ConnectionError as e:
+        print ('Metric for autoscaler is down')
+    except ConnectionError as e:
+      print ('Service is autoscaling. Please try again')
 
 if __name__ == "__main__":
   threads = []
