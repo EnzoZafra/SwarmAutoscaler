@@ -2,6 +2,6 @@ poll_interval: 10
 max_replica: 20
 min_replica: 1
 scale_step: 1
-scale_up_threshold: 3
-scale_down_threshold: 2
+scale_up_threshold: 5
+scale_down_threshold: 3
 servicename: rel_web
