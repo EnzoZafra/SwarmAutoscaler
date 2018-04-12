@@ -11,25 +11,6 @@ from requests.exceptions import ConnectionError
 dockerapi = DockerAPIWrapper()
 startTime = 0
 
-# def req_loop(timequeue, on, config, workload):
-#   with open(config.value, 'r') as ymlfile:
-#     cfg = yaml.load(ymlfile)
-
-#   poll_interval = cfg['poll_interval']
-
-#   while True:
-#     if on.value == True:
-#       reqlen = 0
-
-#       while not timequeue.empty():
-#         reqlen = reqlen + 1
-
-#       if reqlen != 0:
-#         req_per_sec = reqlen / poll_interval
-
-#         workload.append(req_per_sec)
-#       time.sleep(poll_interval)
-
 def autoscaler_loop(timequeue, on, config, avg_response
                     , replications, workload, timeArray):
 
@@ -55,7 +36,8 @@ def autoscaler_loop(timequeue, on, config, avg_response
       while poll_interval > t1 - interval_start:
         try:
           t0 = time.time()
-          r = requests.get(servicehost)
+          # r = requests.get("http://" + servicehost + "/")
+          r = requests.get("http://localhost:8000/")
           t1 = time.time()
           len = len + 1
           sum += t1-t0
