@@ -5,4 +5,4 @@ scale_step: 1
 scale_up_threshold: 5
 scale_down_threshold: 3
 servicename: rel_web
-servicehost: "localhost:8000"
+servicehost: "10.1.0.138:8000"
