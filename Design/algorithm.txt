@@ -4,29 +4,31 @@ The auto-scaling algorithm works by taking the average response
 time within a timing window and see if its within a minimum
 or maximum threshold. If so, scale up or down.
 
-1. Check if queue has any response time values stored (clients POST to fill this queue)
-    - if empty, calculate average using sum and length
-    - if not empty, dequeue value and add to sum
+1. While time elapsed < polling_interval
+    - make a GET request to the service being scaled
+    - add response time to a sum
 
-2. Check if the average is within threshold values.
-    - if avg is larger than max_threshold, proceed, else go to step x
-    - if avg is smaller than min_threshold, proceed, else go to step x
+2. When time elapsed > polling_interval
+    - calculate average by taking the sum and divide by number of requests
+      sent within the polling_interval
+    - reset time elapsed to 0.
 
-3.
+3. Check if the average is within threshold values.
+    - if avg is larger than max_threshold, proceed, else go to step 1
+    - if avg is smaller than min_threshold, proceed, else go to step 1
+
+4.
   - If avg is larger, check if scaling would result in more replicas than 'max_replica'
-      - If yes, go to step x.
+      - If yes, go to step 1.
       - If no proceed
 
   - If avg is smaller, check if scaling would result in less replicas than 'min_replica'
-      - If yes, go to step x.
+      - If yes, go to step 1.
       - If no proceed
 
-4.
+5.
   - If avg is larger, scale up (add more replicas) by 'scale_step' amount
   - If avg is smaller, scale down (remove replicas) by 'scale_step' amount
-
-5. Sleep for 'poll_interval' seconds
-
 
 ##### PARAMETERS #####
 
