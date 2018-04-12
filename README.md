@@ -103,12 +103,17 @@ wget https://raw.githubusercontent.com/EnzoZafra/SwarmAutoscaler/master/client/h
 python http_client [autoscaler's ip] [numthreads] [delay_per_request]
 ```
 
-### Example in a Docker Swarm
+### Routes
 Graphs plotting request per second, workload and number of replicas for the service can be found at the link below
 ```
 http://[autoscalerip]:1337/graphs
 ```
 * Assumes that you have autoscaler running
+
+To turn the autoscaler on or off
+```
+http://[autoscalerip]:1337/toggle
+```
 
 ## Built With
 
