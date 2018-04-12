@@ -43,6 +43,7 @@ def autoscaler_loop(timequeue, on, config, avg_response
   min_replica = cfg['min_replica']
   poll_interval = cfg['poll_interval']
   servicename = cfg['servicename']
+  servicehost = cfg['servicehost']
 
   while True:
     if on.value == True:
@@ -54,7 +55,7 @@ def autoscaler_loop(timequeue, on, config, avg_response
       while poll_interval > t1 - interval_start:
         try:
           t0 = time.time()
-          r = requests.get('http://localhost:8000/')
+          r = requests.get(servicehost)
           t1 = time.time()
           len = len + 1
           sum += t1-t0
