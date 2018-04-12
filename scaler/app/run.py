@@ -26,7 +26,7 @@ def autoscaler_loop(timequeue, config, avg_response
   servicename = cfg['servicename']
   servicehost = cfg['servicehost']
 
-  var on = True;
+  on = True;
   while True:
     if not toggle.empty():
       on = toggle.get()

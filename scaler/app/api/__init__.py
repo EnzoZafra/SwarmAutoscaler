@@ -18,10 +18,11 @@ app = Flask(__name__)
 
 timequeue = Queue()
 toggle = Queue()
-avg_response = Manager().list()
-workload = Manager().list()
-replications = Manager().list()
-timeArray = Manager().list()
+manager = Manager()
+avg_response = manager.list()
+workload = manager.list()
+replications = manager.list()
+timeArray = manager.list()
 switch = 1
 
 @app.route('/metric', methods=['GET', 'POST'])
@@ -35,13 +36,21 @@ def addmetric():
 
 @app.route('/toggle', methods=['GET'])
 def toggleswitch():
+  global switch
   switch = not switch
   toggle.put(switch)
 
+  if(switch):
+    return "You turned on the autoscaler"
+  else:
+    return "You turned off the autoscaler"
+
 @app.route('/graphs', methods=['GET'])
 def plotstats():
+
   if request.method == 'GET':
-    times = [pygal.util.round_to_int(x, 1) for x in timeArray]
+    # trim to last 30 entries
+    times = [pygal.util.round_to_int(x, 1) for x in timeArray[-30:]]
     x_title = 'Elapsed time (sec)'
 
     title = 'Average Response Time vs Elapsed Time'
@@ -51,7 +60,8 @@ def plotstats():
                              style=DarkSolarizedStyle,disable_xml_declaration=True,
                              show_legend=False)
     line_chart.x_labels = times
-    avg_response_arr = [x for x in avg_response]
+
+    avg_response_arr = [x for x in avg_response[-30:]]
     line_chart.add('response time', avg_response_arr)
 
     title2 = 'Requests per second vs Elapsed Time'
@@ -61,7 +71,8 @@ def plotstats():
                              style=DarkSolarizedStyle,disable_xml_declaration=True,
                              show_legend=False)
     line_chart2.x_labels = times
-    workload_arr = [x for x in workload]
+
+    workload_arr = [x for x in workload[-30:]]
     line_chart2.add('workload', workload_arr)
 
     title3 = 'Number of Replications vs Elapsed Time'
@@ -71,7 +82,8 @@ def plotstats():
                              style=DarkSolarizedStyle,disable_xml_declaration=True,
                              show_legend=False)
     line_chart3.x_labels = times
-    replications_arr = [x for x in replications]
+
+    replications_arr = [x for x in replications[-30:]]
     line_chart3.add('replication', replications_arr)
 
     return render_template("plot.html", line_chart=line_chart,line_chart2=line_chart2,line_chart3 = line_chart3)
