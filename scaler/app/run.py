@@ -11,53 +11,27 @@ from requests.exceptions import ConnectionError
 dockerapi = DockerAPIWrapper()
 startTime = 0
 
-# def autoscaler_loop(timequeue, on, config, avg_response
-#                     , workload, replications, timeArray):
-#   with open(config.value, 'r') as ymlfile:
-#     cfg = yaml.load(ymlfile)
+def req_loop(timequeue, on, config, avg_response, workload):
+  with open(config.value, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
 
-#   scale_up_threshold = cfg['scale_up_threshold']
-#   scale_down_threshold = cfg['scale_down_threshold']
-#   scale_step = cfg['scale_step']
-#   max_replica = cfg['max_replica']
-#   min_replica = cfg['min_replica']
-#   poll_interval = cfg['poll_interval']
-#   servicename = cfg['servicename']
+  poll_interval = cfg['poll_interval']
 
-#   while True:
-#     if on.value == True:
-#       len = 0
-#       sum = 0
+  while True:
+    if on.value == True:
+      reqlen = 0
 
-#       while not timequeue.empty():
-#         len = len + 1
-#         sum += float(timequeue.get())
+      while not timequeue.empty():
+        reqlen = reqlen + 1
 
-#       avg = sum/len if len else 0
-#       if avg != 0:
-#         curr_repcount = dockerapi.getReplicaCount(servicename)
-#         req_per_sec = len / poll_interval
+      if reqlen != 0:
+        req_per_sec = len / poll_interval
 
-#         avg_response.append(avg)
-#         replications.append(curr_repcount)
-#         workload.append(req_per_sec)
-#         elapsedTime = time.time() - startTime
-#         timeArray.append(elapsedTime)
+        workload.append(req_per_sec)
+      time.sleep(poll_interval)
 
-#         if avg > scale_up_threshold:
-#           repcount = curr_repcount + scale_step
-#           if repcount <= max_replica:
-#             dockerapi.scaleService(servicename, repcount)
-#             print("Scaling up")
-#         if avg < scale_down_threshold:
-#           repcount = curr_repcount - scale_step
-#           if repcount >= min_replica:
-#             dockerapi.scaleService(servicename, repcount)
-#             print("Scaling down")
-#       time.sleep(poll_interval)
-
-def autoscaler_loop(timequeue, on, config, avg_response
-                    , workload, replications, timeArray):
+def autoscaler_loop(on, config, avg_response
+                    , replications, timeArray):
 
   with open(config.value, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
@@ -84,20 +58,15 @@ def autoscaler_loop(timequeue, on, config, avg_response
           t1 = time.time()
           len = len + 1
           sum += t1-t0
-          print("Response time: {}".format(t1-t0))
-          print("Interval so far: {}".format(t1 - interval_start))
         except ConnectionError as e:
           print('Service is autoscaling. Please try again')
 
       avg = sum/len if len else 0
-      print("avg: {}".format(avg))
       if avg != 0:
         curr_repcount = dockerapi.getReplicaCount(servicename)
-        req_per_sec = len / poll_interval
 
         avg_response.append(avg)
         replications.append(curr_repcount)
-        workload.append(req_per_sec)
         elapsedTime = time.time() - startTime
         timeArray.append(elapsedTime)
 
@@ -111,7 +80,6 @@ def autoscaler_loop(timequeue, on, config, avg_response
           if repcount >= min_replica:
             dockerapi.scaleService(servicename, repcount)
             print("Scaling down")
-      # time.sleep(poll_interval)
 
 if __name__ == '__main__':
   startTime = time.time()
@@ -128,7 +96,12 @@ if __name__ == '__main__':
   val = Value("b", True)
   p = Process(
     target = autoscaler_loop,
-    args = (timequeue, val, config, avg_response, workload, replications, timeArray)
+    args = (val, config, avg_response, replications, timeArray)
+  )
+
+  p2 = Process(
+    target = req_loop,
+    args = (timequeue, val, config, workload)
   )
   p.start()
   app.run(host="0.0.0.0", port=1337)
