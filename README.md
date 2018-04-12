@@ -5,8 +5,6 @@ and automatically scales the said cloud microservice depending on the gathered s
 the application horizontally according to the workload. An acceptable range for response time is indicated by an
 upper and lower threshold which can be configured by a configuration file.
 
-At the moment, the autoscaler relies on statistics being POSTed to it by a client.
-
 ## Authors
 
 * **Lorenzo Zafra** - [enzozafra](https://github.com/enzozafra)
