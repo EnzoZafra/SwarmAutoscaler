@@ -11,27 +11,27 @@ from requests.exceptions import ConnectionError
 dockerapi = DockerAPIWrapper()
 startTime = 0
 
-def req_loop(timequeue, on, config, avg_response, workload):
-  with open(config.value, 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
+# def req_loop(timequeue, on, config, workload):
+#   with open(config.value, 'r') as ymlfile:
+#     cfg = yaml.load(ymlfile)
 
-  poll_interval = cfg['poll_interval']
+#   poll_interval = cfg['poll_interval']
 
-  while True:
-    if on.value == True:
-      reqlen = 0
+#   while True:
+#     if on.value == True:
+#       reqlen = 0
 
-      while not timequeue.empty():
-        reqlen = reqlen + 1
+#       while not timequeue.empty():
+#         reqlen = reqlen + 1
 
-      if reqlen != 0:
-        req_per_sec = len / poll_interval
+#       if reqlen != 0:
+#         req_per_sec = reqlen / poll_interval
 
-        workload.append(req_per_sec)
-      time.sleep(poll_interval)
+#         workload.append(req_per_sec)
+#       time.sleep(poll_interval)
 
-def autoscaler_loop(on, config, avg_response
-                    , replications, timeArray):
+def autoscaler_loop(timequeue, on, config, avg_response
+                    , replications, workload, timeArray):
 
   with open(config.value, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
@@ -63,6 +63,14 @@ def autoscaler_loop(on, config, avg_response
 
       avg = sum/len if len else 0
       if avg != 0:
+        while not timequeue.empty():
+          timequeue.get()
+          len = len + 1
+
+        if len != 0:
+          req_per_sec = len / (t1 - interval_start)
+
+        workload.append(req_per_sec)
         curr_repcount = dockerapi.getReplicaCount(servicename)
 
         avg_response.append(avg)
@@ -96,13 +104,9 @@ if __name__ == '__main__':
   val = Value("b", True)
   p = Process(
     target = autoscaler_loop,
-    args = (val, config, avg_response, replications, timeArray)
+    args = (timequeue, val, config, avg_response, replications, workload, timeArray)
   )
 
-  p2 = Process(
-    target = req_loop,
-    args = (timequeue, val, config, workload)
-  )
   p.start()
   app.run(host="0.0.0.0", port=1337)
   p.join()
