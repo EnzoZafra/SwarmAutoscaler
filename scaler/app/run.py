@@ -4,15 +4,15 @@ import time
 import ctypes
 import requests
 from multiprocessing import Process, Value, Queue
-from api import app, timequeue, avg_response, workload, replications, timeArray
+from api import app, timequeue, avg_response, workload, replications, timeArray, toggle
 from mydocker.dockerapi import DockerAPIWrapper
 from requests.exceptions import ConnectionError
 
 dockerapi = DockerAPIWrapper()
 startTime = 0
 
-def autoscaler_loop(timequeue, on, config, avg_response
-                    , replications, workload, timeArray):
+def autoscaler_loop(timequeue, config, avg_response
+                    , replications, workload, timeArray, toggle):
 
   with open(config.value, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
@@ -26,41 +26,45 @@ def autoscaler_loop(timequeue, on, config, avg_response
   servicename = cfg['servicename']
   servicehost = cfg['servicehost']
 
+  var on = True;
   while True:
-    if on.value == True:
-      len = 0
-      sum = 0
+    if not toggle.empty():
+      on = toggle.get()
 
-      interval_start = time.time();
-      t1 = 0;
-      while poll_interval > t1 - interval_start:
-        try:
-          t0 = time.time()
-          r = requests.get("http://" + servicehost + "/")
-          # r = requests.get("http://10.1.0.138:8000/")
-          t1 = time.time()
-          len = len + 1
-          sum += t1-t0
-        except ConnectionError as e:
-          print('Service is autoscaling. Please try again')
+    len = 0
+    sum = 0
 
-      avg = sum/len if len else 0
-      if avg != 0:
-        while not timequeue.empty():
-          timequeue.get()
-          len = len + 1
+    interval_start = time.time();
+    t1 = 0;
+    while poll_interval > t1 - interval_start:
+      try:
+        t0 = time.time()
+        r = requests.get("http://" + servicehost + "/")
+        # r = requests.get("http://10.1.0.138:8000/")
+        t1 = time.time()
+        len = len + 1
+        sum += t1-t0
+      except ConnectionError as e:
+        print('Service is autoscaling. Please try again')
 
-        if len != 0:
-          req_per_sec = len / (t1 - interval_start)
+    avg = sum/len if len else 0
+    if avg != 0:
+      while not timequeue.empty():
+        timequeue.get()
+        len = len + 1
 
-        workload.append(req_per_sec)
-        curr_repcount = dockerapi.getReplicaCount(servicename)
+      if len != 0:
+        req_per_sec = len / (t1 - interval_start)
 
-        avg_response.append(avg)
-        replications.append(curr_repcount)
-        elapsedTime = time.time() - startTime
-        timeArray.append(elapsedTime)
+      workload.append(req_per_sec)
+      curr_repcount = dockerapi.getReplicaCount(servicename)
 
+      avg_response.append(avg)
+      replications.append(curr_repcount)
+      elapsedTime = time.time() - startTime
+      timeArray.append(elapsedTime)
+
+      if on:
         if avg > scale_up_threshold:
           repcount = curr_repcount + scale_step
           if repcount <= max_replica:
@@ -84,10 +88,9 @@ if __name__ == '__main__':
   else:
     config = Value(ctypes.c_char_p, "/opt/swarmautoscaler/autoscaler.yml")
 
-  val = Value("b", True)
   p = Process(
     target = autoscaler_loop,
-    args = (timequeue, val, config, avg_response, replications, workload, timeArray)
+    args = (timequeue, config, avg_response, replications, workload, timeArray, toggle)
   )
 
   p.start()

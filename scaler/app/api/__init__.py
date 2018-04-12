@@ -12,14 +12,17 @@ global avg_response
 global workload
 global replications
 global timeArray
+global toggle
 
 app = Flask(__name__)
 
 timequeue = Queue()
+toggle = Queue()
 avg_response = Manager().list()
 workload = Manager().list()
 replications = Manager().list()
 timeArray = Manager().list()
+switch = 1
 
 @app.route('/metric', methods=['GET', 'POST'])
 def addmetric():
@@ -30,6 +33,10 @@ def addmetric():
   else:
     return 'You did a get post on /metric'
 
+@app.route('/toggle', methods=['GET'])
+def toggleswitch():
+  switch = not switch
+  toggle.put(switch)
 
 @app.route('/graphs', methods=['GET'])
 def plotstats():
