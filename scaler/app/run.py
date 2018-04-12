@@ -36,8 +36,8 @@ def autoscaler_loop(timequeue, on, config, avg_response
       while poll_interval > t1 - interval_start:
         try:
           t0 = time.time()
-          # r = requests.get("http://" + servicehost + "/")
-          r = requests.get("http://localhost:8000/")
+          r = requests.get("http://" + servicehost + "/")
+          # r = requests.get("http://10.1.0.138:8000/")
           t1 = time.time()
           len = len + 1
           sum += t1-t0
