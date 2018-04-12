@@ -50,7 +50,7 @@ def plotstats():
 
   if request.method == 'GET':
     # trim to last 30 entries
-    times = [pygal.util.round_to_int(x, 1) for x in timeArray[-30:]]
+    times = [pygal.util.round_to_int(x, 1) for x in timeArray[-80:]]
     x_title = 'Elapsed time (sec)'
 
     title = 'Average Response Time vs Elapsed Time'
@@ -61,7 +61,7 @@ def plotstats():
                              show_legend=False)
     line_chart.x_labels = times
 
-    avg_response_arr = [x for x in avg_response[-30:]]
+    avg_response_arr = [x for x in avg_response[-80:]]
     line_chart.add('response time', avg_response_arr)
 
     title2 = 'Requests per second vs Elapsed Time'
@@ -72,7 +72,7 @@ def plotstats():
                              show_legend=False)
     line_chart2.x_labels = times
 
-    workload_arr = [x for x in workload[-30:]]
+    workload_arr = [x for x in workload[-80:]]
     line_chart2.add('workload', workload_arr)
 
     title3 = 'Number of Replications vs Elapsed Time'
@@ -83,7 +83,7 @@ def plotstats():
                              show_legend=False)
     line_chart3.x_labels = times
 
-    replications_arr = [x for x in replications[-30:]]
+    replications_arr = [x for x in replications[-80:]]
     line_chart3.add('replication', replications_arr)
 
     return render_template("plot.html", line_chart=line_chart,line_chart2=line_chart2,line_chart3 = line_chart3)
