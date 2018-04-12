@@ -30,14 +30,16 @@ services:
       placement:
         constraints: [node.role == manager]
 
-  # autoscaler:
-  #   image: zafra/swarmautoscaler:ece422
-  #   ports:
-  #     - "1337:1337"
-  #   volumes:
-  #     - ${PWD}/swarmautoscaler.yml:/opt/swarmautoscaler/swarmautoscaler.yml
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.role == manager
+  autoscaler:
+    image: zafra/swarmautoscaler:ece422
+    ports:
+      - "1337:1337"
+    volumes:
+      - ${PWD}/swarmautoscaler.yml:/opt/swarmautoscaler/swarmautoscaler.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    depends_on:
+      - "web"
