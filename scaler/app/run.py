@@ -6,7 +6,7 @@ import requests
 from multiprocessing import Process, Value, Queue
 from api import app, timequeue, avg_response, workload, replications, timeArray, toggle
 from mydocker.dockerapi import DockerAPIWrapper
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, RequestException
 
 dockerapi = DockerAPIWrapper()
 startTime = 0
@@ -39,13 +39,17 @@ def autoscaler_loop(timequeue, config, avg_response
     while poll_interval > t1 - interval_start:
       try:
         t0 = time.time()
-        r = requests.get("http://" + servicehost + "/")
+        r = requests.get("http://" + servicehost + "/", timeout=2*scale_up_threshold)
         # r = requests.get("http://10.1.0.138:8000/")
         t1 = time.time()
         len = len + 1
         sum += t1-t0
       except ConnectionError as e:
         print('Service is autoscaling. Please try again')
+      except RequestException:
+        t1 = time.time()
+        len = len + 1
+        sum += t1-t0
 
     avg = sum/len if len else 0
     if avg != 0:
